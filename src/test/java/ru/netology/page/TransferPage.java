@@ -2,7 +2,6 @@ package ru.netology.page;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import org.openqa.selenium.Keys;
 import ru.netology.data.DataHelper;
 
 import java.time.Duration;
@@ -12,33 +11,31 @@ import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
 public class TransferPage {
-    private SelenideElement header = $("[data-test-id=dashboard] ~h1");
+
+    private final SelenideElement amountField = $("[data-test-id=amount] .input__control");
+    private final SelenideElement numberCardField = $("[data-test-id=from] .input__control");
+    private final SelenideElement buttonTransfer = $("[data-test-id=action-transfer]");
+    private final SelenideElement errorMessage = $("[data-test-id='error-notification'] .notification__content");
+
 
     public TransferPage() {
-        header.shouldBe(visible).shouldHave(Condition.text("Пополнение карты"));
+        SelenideElement transferHead = $(byText("Пополнение карты"));
+        transferHead.shouldBe(visible);
     }
 
-    private SelenideElement amountField = $("[data-test-id=amount] .input__control");
-    private SelenideElement numberCardField = $("[data-test-id=from] .input__control");
-    private SelenideElement buttonTransfer = $("[data-test-id=action-transfer]");
-    private SelenideElement buttonCancel = $("[data-test-id=action-cancel]");
-
-    public void fillInForm(Integer sum, DataHelper.CardInfo card) {
-        amountField.sendKeys(Keys.chord(Keys.CONTROL + "A"), Keys.DELETE);
-        amountField.setValue(Integer.toString(sum));
-        numberCardField.sendKeys(Keys.chord(Keys.CONTROL + "A"), Keys.DELETE);
-        numberCardField.sendKeys(card.getCardNumber());
-    }
-
-    public DashboardPage replCardBalance(Integer sum, DataHelper.CardInfo card) {
-        fillInForm(sum, card);
+    public void makeTransfer(String amountToTransfer, DataHelper.CardInfo cardInfo) {
+        amountField.setValue(amountToTransfer);
+        numberCardField.setValue(cardInfo.getCardNumber());
         buttonTransfer.click();
+    }
+
+    public DashboardPage makeValidTransfer(String amountToTransfer, DataHelper.CardInfo cardInfo) {
+        makeTransfer(amountToTransfer, cardInfo);
         return new DashboardPage();
     }
 
-    public DashboardPage replCardCancel(Integer sum, DataHelper.CardInfo card) {
-        fillInForm(sum, card);
-        buttonCancel.click();
-        return new DashboardPage();
+    public void findErrorMessage(String expectedText) {
+        errorMessage.shouldHave(Condition.text(expectedText), Duration.ofSeconds(15)).shouldBe(visible);
     }
+
 }
